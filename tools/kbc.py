@@ -173,6 +173,7 @@ def add_to_manifest(repositories, fallback_branch = None):
             repo_account = repository['account']
         else:
             repo_account = 'kbc-developers'
+
         if exists_in_tree(lm, repo_name):
             print(repo_account + '/%s already exists' % (repo_name))
             continue
@@ -214,6 +215,7 @@ def fetch_dependencies(repo_path, fallback_branch = None):
                 account = dependency['account']
             else:
                 account = 'kbc-developers'
+
             if not is_in_manifest(account + "/%s" % dependency['repository']):
                 fetch_list.append(dependency)
                 syncable_repos.append(dependency['target_path'])
@@ -237,10 +239,10 @@ if depsonly:
     repo_path = get_from_manifest(device)
     if repo_path:
         fetch_dependencies(repo_path)
+        sys.exit(0)
     else:
         print("Trying dependencies-only mode on a non-existing device tree?")
-
-    sys.exit(1)
+        sys.exit(1)
 
 else:
     for repository in repositories:
