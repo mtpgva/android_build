@@ -172,20 +172,11 @@ def add_to_manifest(repositories, fallback_branch = None):
     except:
         lm_kbc = ElementTree.Element("manifest")
 
-    try:
-        lm_aojp = ElementTree.parse(".repo/local_manifests/kbc.xml")
-        lm_aojp = lm_aojp.getroot()
-    except:
-        lm_aojp = ElementTree.Element("manifest")
-
     for repository in repositories:
         repo_name = repository['repository']
         repo_target = repository['target_path']
         if exists_in_tree(lm_kbc, repo_name):
             print('kbc-developers/%s already exists' % (repo_name))
-            continue
-        if exists_in_tree(lm_aojp, repo_name):
-            print('aojp/%s already exists' % (repo_name))
             continue
         if exists_in_tree(lm, repo_name):
             print('CyanogenMod/%s already exists' % (repo_name))

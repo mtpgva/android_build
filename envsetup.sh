@@ -584,18 +584,12 @@ function lunch()
         pushd $T > /dev/null
         build/tools/kbc.py $product
         if [ $? != 0 ]; then
-            build/tools/aojp.py $product
-        fi
-        if [ $? != 0 ]; then
             build/tools/roomservice.py $product
         fi
         popd > /dev/null
         check_product $product
     else
         build/tools/kbc.py $product true
-        if [ $? != 0 ]; then
-            build/tools/aojp.py $product true
-        fi
         if [ $? != 0 ]; then
             build/tools/roomservice.py $product true
         fi
