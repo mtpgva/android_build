@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2012-2013, The CyanogenMod Project
+# Copyright (C) 2014-2015 KBC Developers
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ except:
     device = product
 
 if not depsonly:
-    print("Device %s not found. Attempting to retrieve device repository from CyanogenMod Github (http://github.com/CyanogenMod)." % device)
+    print("Device %s not found. Attempting to retrieve device repository from kbc-developers Github (http://github.com/kbc-developers)." % device)
 
 repositories = []
 
@@ -70,7 +70,7 @@ def add_auth(githubreq):
         githubreq.add_header("Authorization","Basic %s" % githubauth)
 
 if not depsonly:
-    githubreq = urllib.request.Request("https://api.github.com/search/repositories?q=%s+user:CyanogenMod+in:name+fork:true" % device)
+    githubreq = urllib.request.Request("https://api.github.com/search/repositories?q=%s+user:kbc-developers+in:name+fork:true" % device)
     add_auth(githubreq)
     try:
         result = json.loads(urllib.request.urlopen(githubreq).read().decode())
@@ -116,7 +116,7 @@ def get_default_revision():
 
 def get_from_manifest(devicename):
     try:
-        lm = ElementTree.parse(".repo/local_manifests/roomservice.xml")
+        lm = ElementTree.parse(".repo/local_manifests/kbc.xml")
         lm = lm.getroot()
     except:
         lm = ElementTree.Element("manifest")
@@ -140,7 +140,7 @@ def get_from_manifest(devicename):
 
 def is_in_manifest(projectname):
     try:
-        lm = ElementTree.parse(".repo/local_manifests/roomservice.xml")
+        lm = ElementTree.parse(".repo/local_manifests/kbc.xml")
         lm = lm.getroot()
     except:
         lm = ElementTree.Element("manifest")
@@ -164,30 +164,26 @@ def is_in_manifest(projectname):
 
 def add_to_manifest(repositories, fallback_branch = None):
     try:
-        lm = ElementTree.parse(".repo/local_manifests/roomservice.xml")
+        lm = ElementTree.parse(".repo/local_manifests/kbc.xml")
         lm = lm.getroot()
     except:
         lm = ElementTree.Element("manifest")
 
-    try:
-        lm_kbc = ElementTree.parse(".repo/local_manifests/kbc.xml")
-        lm_kbc = lm_kbc.getroot()
-    except:
-        lm_kbc = ElementTree.Element("manifest")
-
     for repository in repositories:
         repo_name = repository['repository']
         repo_target = repository['target_path']
-        if exists_in_tree(lm_kbc, repo_name):
-            print('kbc-developers/%s already exists' % (repo_name))
-            continue
+        if 'account' in repository:
+            repo_account = repository['account']
+        else:
+            repo_account = 'kbc-developers'
+
         if exists_in_tree(lm, repo_name):
-            print('CyanogenMod/%s already exists' % (repo_name))
+            print(repo_account + '/%s already exists' % (repo_name))
             continue
 
-        print('Adding dependency: CyanogenMod/%s -> %s' % (repo_name, repo_target))
+        print('Adding dependency: ' + repo_account + '/%s -> %s' % (repo_name, repo_target))
         project = ElementTree.Element("project", attrib = { "path": repo_target,
-            "remote": "github", "name": "CyanogenMod/%s" % repo_name })
+            "remote": "github", "name": repo_account + "/%s" % repo_name })
 
         if 'branch' in repository:
             project.set('revision',repository['branch'])
@@ -203,7 +199,7 @@ def add_to_manifest(repositories, fallback_branch = None):
     raw_xml = ElementTree.tostring(lm).decode()
     raw_xml = '<?xml version="1.0" encoding="UTF-8"?>\n' + raw_xml
 
-    f = open('.repo/local_manifests/roomservice.xml', 'w')
+    f = open('.repo/local_manifests/kbc.xml', 'w')
     f.write(raw_xml)
     f.close()
 
@@ -218,7 +214,12 @@ def fetch_dependencies(repo_path, fallback_branch = None):
         fetch_list = []
 
         for dependency in dependencies:
-            if not is_in_manifest("CyanogenMod/%s" % dependency['repository']):
+            if 'account' in dependency:
+                account = dependency['account']
+            else:
+                account = 'kbc-developers'
+
+            if not is_in_manifest(account + "/%s" % dependency['repository']):
                 fetch_list.append(dependency)
                 syncable_repos.append(dependency['target_path'])
 
@@ -244,10 +245,10 @@ if depsonly:
     repo_path = get_from_manifest(device)
     if repo_path:
         fetch_dependencies(repo_path)
+        sys.exit(0)
     else:
         print("Trying dependencies-only mode on a non-existing device tree?")
-
-    sys.exit()
+        sys.exit(1)
 
 else:
     for repository in repositories:
@@ -289,7 +290,7 @@ else:
                     for branch in [branch['name'] for branch in result]:
                         print(branch)
                     print("Use the ROOMSERVICE_BRANCHES environment variable to specify a list of fallback branches.")
-                    sys.exit()
+                    sys.exit(1)
 
             add_to_manifest([adding], fallback_branch)
 
@@ -299,6 +300,7 @@ else:
 
             fetch_dependencies(repo_path, fallback_branch)
             print("Done")
-            sys.exit()
+            sys.exit(0)
 
-print("Repository for %s not found in the CyanogenMod Github repository list. If this is in error, you may need to manually add it to your local_manifests/roomservice.xml." % device)
+print("Repository for %s not found in the kbc-developers Github repository list. If this is in error, you may need to manually add it to your local_manifests/kbc.xml." % device)
+sys.exit(1)
