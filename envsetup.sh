@@ -1,4 +1,3 @@
-#  mtp version
 function hmm() {
 cat <<EOF
 Invoke ". build/envsetup.sh" from your shell to add the following functions to your environment:
@@ -614,11 +613,17 @@ function lunch()
         # if we can't find a product, try to grab it off the CM github
         T=$(gettop)
         pushd $T > /dev/null
-        build/tools/roomservice.py $product
+        build/tools/mtp.py $product
+        if [ $? != 0 ]; then
+            build/tools/roomservice.py $product
+        fi
         popd > /dev/null
         check_product $product
     else
-        build/tools/roomservice.py $product true
+        build/tools/mtp.py $product true
+        if [ $? != 0 ]; then
+            build/tools/roomservice.py $product true
+        fi
     fi
     if [ $? -ne 0 ]
     then
@@ -2330,20 +2335,14 @@ function cmrebase() {
 }
 
 function mka() {
-    local T=$(gettop)
-    if [ "$T" ]; then
-        case `uname -s` in
-            Darwin)
-                make -C $T -j `sysctl hw.ncpu|cut -d" " -f2` "$@"
-                ;;
-            *)
-                mk_timer schedtool -B -n 1 -e ionice -n 1 make -C $T -j$(cat /proc/cpuinfo | grep "^processor" | wc -l) "$@"
-                ;;
-        esac
-
-    else
-        echo "Couldn't locate the top of the tree.  Try setting TOP."
-    fi
+    case `uname -s` in
+        Darwin)
+            make -j `sysctl hw.ncpu|cut -d" " -f2` "$@"
+            ;;
+        *)
+            mk_timer schedtool -B -n 1 -e ionice -n 1 make -j$(cat /proc/cpuinfo | grep "^processor" | wc -l) "$@"
+            ;;
+    esac
 }
 
 function cmka() {
