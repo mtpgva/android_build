@@ -175,7 +175,7 @@ def add_to_manifest(repositories, fallback_branch = None):
         if 'account' in repository:
             repo_account = repository['account']
         else:
-            repo_account = 'CyanogenMod'
+            repo_account = 'mtpgva'
 
         if exists_in_tree(lm, repo_name):
             print(repo_account + '/%s already exists' % (repo_name))
@@ -217,7 +217,7 @@ def fetch_dependencies(repo_path, fallback_branch = None):
             if 'account' in dependency:
                 account = dependency['account']
             else:
-                account = 'CyanogenMod'
+                account = 'mtpgva'
 
             if not is_in_manifest(account + "/%s" % dependency['repository']):
                 fetch_list.append(dependency)

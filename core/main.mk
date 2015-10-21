@@ -85,6 +85,9 @@ ifneq ($(filter $(dont_bother_goals), $(MAKECMDGOALS)),)
 dont_bother := true
 endif
 
+# Create recovery symbolic link
+include $(BUILD_SYSTEM)/recovery_symlink.mk
+
 # Targets that provide quick help on the build system.
 include $(BUILD_SYSTEM)/help.mk
 
