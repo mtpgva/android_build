@@ -88,6 +88,9 @@ endif
 # Targets that provide quick help on the build system.
 include $(BUILD_SYSTEM)/help.mk
 
+# Create recovery symbolic link
+include $(BUILD_SYSTEM)/recovery_symlink.mk
+
 # Set up various standard variables based on configuration
 # and host information.
 include $(BUILD_SYSTEM)/config.mk
